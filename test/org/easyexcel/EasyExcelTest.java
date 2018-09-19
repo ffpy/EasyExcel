@@ -1,6 +1,5 @@
 package org.easyexcel;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.junit.Test;
@@ -27,22 +26,20 @@ public class EasyExcelTest {
 	public void example1() throws IOException {
 		// 创建工作簿
 		Workbooks workbook = Excels.createWorkbook();
-		// 创建样式建造者
-		CellStyleBuilder styleBuilder = CellStyleBuilder.of(workbook);
-		// 创建居中样式（内容）
-		HSSFCellStyle centerStyle = styleBuilder.alignment(HorizontalAlignment.CENTER)
-			.verticalAlignment(VerticalAlignment.CENTER).newStyle();
+		// 创建居中样式（表身）
+		CellStyleBuilder centerStyle = CellStyleBuilder.of().alignment(HorizontalAlignment.CENTER)
+			.verticalAlignment(VerticalAlignment.CENTER);
 		// 创建居中加粗样式（表头）
-		HSSFCellStyle centerBoldStyle = styleBuilder.bold(true).newStyle();
+		CellStyleBuilder centerBoldStyle = CellStyleBuilder.of(centerStyle).bold(true);
 		workbook.createSheet()
-			.mergedRegion(0, 0, 0, 3)
+			.mergedRegion(0, 0, 0, 4)
 			.style(centerBoldStyle)
 			.value("成绩表")
 			.nextRow()
 			.values(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
 			.nextRow()
-			.beanValues(centerStyle, getData(), "yyyy-MM-dd")
-			.autoSizeColumn();
+			.values(centerStyle, getData(), "yyyy-MM-dd")
+			.autoColumnSize();
 		// 写入到文件
 		workbook.write(new File("example/example1.xls"));
 	}
@@ -64,15 +61,60 @@ public class EasyExcelTest {
 			.nextCell().value("cc")
 			.nextRow().value(new Date(), "yyyy-MM-dd")
 			.nextCell().value(Calendar.getInstance(), "yyyy-MM-dd HH:mm:ss")
-			.autoSizeColumn();
+			.autoColumnSize();
 		workbook.write(new File("example/example2.xls"));
 	}
 
+	@Test
+	public void example3() throws IOException {
+		// 创建居中样式（表身）
+		CellStyleBuilder centerStyle = CellStyleBuilder.of().alignment(HorizontalAlignment.CENTER)
+			.verticalAlignment(VerticalAlignment.CENTER);
+		// 创建居中加粗样式（表头）
+		CellStyleBuilder centerBoldStyle = CellStyleBuilder.of(centerStyle).bold(true);
+		// 创建表身数据
+		String[][] body = new String[2][];
+		for (int i = 0; i < 2; i++) {
+			body[i] = new String[3];
+			for (int j = 0; j < body[i].length; j++) {
+				body[i][j] = "第" + (i * body[i].length + j) + "条测试数据";
+			}
+		}
+		// 创建表格
+		Excels.helper().title(centerBoldStyle, "测试标题")
+			.header(centerBoldStyle, "标题1", "标题2", "标题3")
+			.body(centerStyle, body)
+			.write(new File("example/example3.xls"));
+	}
+
+	@Test
+	public void example4() throws IOException {
+		// 创建居中样式（表身）
+		CellStyleBuilder centerStyle = CellStyleBuilder.of().alignment(HorizontalAlignment.CENTER)
+			.verticalAlignment(VerticalAlignment.CENTER);
+		// 创建居中加粗样式（表头）
+		CellStyleBuilder centerBoldStyle = CellStyleBuilder.of(centerStyle).bold(true);
+		// 创建表格
+		Excels.helper().globalDateFormat("yyyy-MM-dd")
+			.title(centerBoldStyle, "成绩表")
+			.header(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
+			.body(centerStyle, getData())
+			.write(new File("example/example4.xls"));
+	}
+
+	/**
+	 * 测试数据项
+	 */
 	private static class Item {
+		/** 学号 */
 		private String no;
+		/** 姓名 */
 		private String name;
+		/** 课程 */
 		private String course;
+		/** 成绩 */
 		private double score;
+		/** 考试日期 */
 		private Date examTime;
 
 		public Item(String no, String name, String course, double score, Date examTime) {

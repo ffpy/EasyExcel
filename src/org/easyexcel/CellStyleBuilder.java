@@ -9,40 +9,45 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 /**
  * 单元格样式建造者
  */
-public class CellStyleBuilder {
-	private HSSFWorkbook workbook;
+public class CellStyleBuilder implements Cloneable {
+	/** 水平对齐 */
 	private HorizontalAlignment horizontalAlignment;
+	/** 垂直对齐 */
 	private VerticalAlignment verticalAlignment;
-	private Boolean bold;
+	/** 字体颜色 */
 	private Short color;
+	/** 是否加粗 */
+	private Boolean bold;
+	/** 是否斜体 */
 	private Boolean italic;
+	/** 下划线样式 */
 	private Byte underline;
+	/** 缓存build后的样式 */
+	private HSSFCellStyle cellStyle;
 
 	/**
-	 * 创建一个自身实例
+	 * 创建一个CellStyle实例
 	 *
-	 * @param workbooks Excel工作簿辅助类
-	 * @return 实例
+	 * @return CellStyle实例
 	 */
-	public static CellStyleBuilder of(Workbooks workbooks) {
-		return new CellStyleBuilder(workbooks.getWorkbook());
+	public static CellStyleBuilder of() {
+		return new CellStyleBuilder();
 	}
 
 	/**
-	 * 创建一个自身实例
+	 * 复制一个CellStyle实例
 	 *
-	 * @param workbook Excel工作簿
-	 * @return 实例
+	 * @return 复制的CellStyle实例
 	 */
-	private CellStyleBuilder(HSSFWorkbook workbook) {
-		this.workbook = workbook;
+	public static CellStyleBuilder of(CellStyleBuilder source) {
+		return source.clone();
 	}
 
 	/**
 	 * 设置水平对齐方式
 	 *
 	 * @param alignment 水平对齐方式
-	 * @return 自身实例
+	 * @return this
 	 */
 	public CellStyleBuilder alignment(HorizontalAlignment alignment) {
 		this.horizontalAlignment = alignment;
@@ -53,7 +58,7 @@ public class CellStyleBuilder {
 	 * 设置垂直对齐方式
 	 *
 	 * @param alignment 垂直对齐方式
-	 * @return 自身实例
+	 * @return this
 	 */
 	public CellStyleBuilder verticalAlignment(VerticalAlignment alignment) {
 		this.verticalAlignment = alignment;
@@ -64,7 +69,7 @@ public class CellStyleBuilder {
 	 * 设置粗体
 	 *
 	 * @param bold true为粗体，false为非粗体
-	 * @return 自身实例
+	 * @return this
 	 */
 	public CellStyleBuilder bold(boolean bold) {
 		this.bold = bold;
@@ -75,7 +80,7 @@ public class CellStyleBuilder {
 	 * 设置字体颜色
 	 *
 	 * @param color 字体颜色
-	 * @return 自身实例
+	 * @return this
 	 */
 	public CellStyleBuilder color(short color) {
 		this.color = color;
@@ -86,7 +91,7 @@ public class CellStyleBuilder {
 	 * 设置斜体
 	 *
 	 * @param italic true为斜体，false为非斜体
-	 * @return 自身实例
+	 * @return this
 	 */
 	public CellStyleBuilder italic(boolean italic) {
 		this.italic = italic;
@@ -97,7 +102,7 @@ public class CellStyleBuilder {
 	 * 设置下划线
 	 *
 	 * @param underline 下划线
-	 * @return 自身实例
+	 * @return this
 	 */
 	public CellStyleBuilder underline(byte underline) {
 		this.underline = underline;
@@ -107,26 +112,36 @@ public class CellStyleBuilder {
 	/**
 	 * 基于自身设置创建一个样式实例
 	 *
-	 * @return 样式实习
+	 * @return 样式实例
 	 */
-	public HSSFCellStyle newStyle() {
-		HSSFCellStyle cellStyle = workbook.createCellStyle();
-		HSSFFont font = workbook.createFont();
-
-		if (horizontalAlignment != null)
-			cellStyle.setAlignment(horizontalAlignment);
-		if (verticalAlignment != null)
-			cellStyle.setVerticalAlignment(verticalAlignment);
-		if (bold != null)
-			font.setBold(bold);
-		if (color != null)
-			font.setColor(color);
-		if (italic != null)
-			font.setItalic(italic);
-		if (underline != null)
-			font.setUnderline(underline);
-
-		cellStyle.setFont(font);
+	public HSSFCellStyle build(HSSFWorkbook workbook) {
+		if (cellStyle == null) {
+			cellStyle = workbook.createCellStyle();
+			HSSFFont font = workbook.createFont();
+			if (horizontalAlignment != null)
+				cellStyle.setAlignment(horizontalAlignment);
+			if (verticalAlignment != null)
+				cellStyle.setVerticalAlignment(verticalAlignment);
+			if (bold != null)
+				font.setBold(bold);
+			if (color != null)
+				font.setColor(color);
+			if (italic != null)
+				font.setItalic(italic);
+			if (underline != null)
+				font.setUnderline(underline);
+			cellStyle.setFont(font);
+		}
 		return cellStyle;
+	}
+
+	@Override
+	protected CellStyleBuilder clone() {
+		try {
+			return (CellStyleBuilder) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

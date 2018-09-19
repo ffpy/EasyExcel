@@ -5,7 +5,6 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -32,6 +31,8 @@ public class Sheets {
 	private int curColIndex = -1;
 	/** 最大行号 */
 	private int maxColNum = 0;
+	/** 全局日期格式 */
+	private String globalDateFormat;
 
 	/**
 	 * @param sheet 工作簿实例
@@ -81,13 +82,33 @@ public class Sheets {
 	}
 
 	/**
+	 * 获取最大列数
+	 *
+	 * @return 最大列数
+	 */
+	public int getMaxColNum() {
+		return maxColNum;
+	}
+
+	/**
+	 * 设置全局日期格式
+	 *
+	 * @param format 日期格式
+	 * @return this
+	 */
+	public Sheets globalDateFormat(String format) {
+		this.globalDateFormat = format;
+		return this;
+	}
+
+	/**
 	 * 合并单元格
 	 *
 	 * @param firstRow 起始行号
 	 * @param lastRow  结束行号（包括）
 	 * @param firstCol 起始列号
 	 * @param lastCol  结束列号（包括）
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets mergedRegion(int firstRow, int lastRow, int firstCol, int lastCol) {
 		sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
@@ -99,7 +120,7 @@ public class Sheets {
 	 *
 	 * @param row    行号
 	 * @param column 列号
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets to(int row, int column) {
 		curRow = sheet.getRow(row);
@@ -138,7 +159,7 @@ public class Sheets {
 	/**
 	 * 跳到下一行，同时指向第一个单元格
 	 *
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets nextRow() {
 		curRow = sheet.createRow(++curRowIndex);
@@ -150,7 +171,7 @@ public class Sheets {
 	/**
 	 * 跳到下一个单元格，自动跳过合并单元格
 	 *
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets nextCell() {
 		setCurColIndex(curColIndex + 1);
@@ -182,7 +203,7 @@ public class Sheets {
 	 * 跳过指定数目的单元格
 	 *
 	 * @param num 跳过的单元格数目
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets skipCell(int num) {
 		setCurColIndex(curColIndex + num);
@@ -194,7 +215,18 @@ public class Sheets {
 	 * 设置当前单元格的样式
 	 *
 	 * @param style 样式
-	 * @return 自身实例
+	 * @return this
+	 */
+	public Sheets style(CellStyleBuilder style) {
+		curCell.setCellStyle(style.build(sheet.getWorkbook()));
+		return this;
+	}
+
+	/**
+	 * 设置当前单元格的样式
+	 *
+	 * @param style 样式
+	 * @return this
 	 */
 	public Sheets style(HSSFCellStyle style) {
 		curCell.setCellStyle(style);
@@ -209,16 +241,16 @@ public class Sheets {
 	 * @param lastRow  结束行号（包括）
 	 * @param firstCol 起始列号
 	 * @param lastCol  结束列号（包括）
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets style(HSSFCellStyle style, int firstRow, int lastRow, int firstCol, int lastCol) {
+	public Sheets style(CellStyleBuilder style, int firstRow, int lastRow, int firstCol, int lastCol) {
 		for (int r = firstRow; r <= lastRow; r++) {
 			HSSFRow row = sheet.getRow(r);
 			if (row == null) continue;
 			for (int c = firstCol; c <= lastCol; c++) {
 				HSSFCell cell = row.getCell(c);
 				if (cell == null) continue;
-				cell.setCellStyle(style);
+				cell.setCellStyle(style.build(sheet.getWorkbook()));
 			}
 		}
 		return this;
@@ -228,7 +260,7 @@ public class Sheets {
 	 * 设置当前单元格的值
 	 *
 	 * @param value 值
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets value(@Nullable String value) {
 		curCell.setCellValue(value);
@@ -239,7 +271,7 @@ public class Sheets {
 	 * 设置当前单元格的值
 	 *
 	 * @param value 值
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets value(@Nullable RichTextString value) {
 		curCell.setCellValue(value);
@@ -250,7 +282,7 @@ public class Sheets {
 	 * 设置当前单元格的值
 	 *
 	 * @param value 值
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets value(double value) {
 		curCell.setCellValue(value);
@@ -261,22 +293,23 @@ public class Sheets {
 	 * 设置当前单元格的值
 	 *
 	 * @param value 值
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets value(Date value) {
-		curCell.setCellValue(value);
-		return this;
+		return value(value, null);
 	}
 
 	/**
 	 * 设置当前单元格的值
 	 *
-	 * @param value   值
-	 * @param pattern 格式字符串
-	 * @return 自身实例
+	 * @param value  值
+	 * @param format 格式字符串
+	 * @return this
 	 */
-	public Sheets value(Date value, String pattern) {
-		dateFormat(pattern);
+	public Sheets value(Date value, @Nullable String format) {
+		if (globalDateFormat != null && format == null)
+			format = globalDateFormat;
+		dateFormat(format);
 		curCell.setCellValue(value);
 		return this;
 	}
@@ -285,22 +318,23 @@ public class Sheets {
 	 * 设置当前单元格的值
 	 *
 	 * @param value 值
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets value(Calendar value) {
-		curCell.setCellValue(value);
-		return this;
+		return value(value, null);
 	}
 
 	/**
 	 * 设置当前单元格的值
 	 *
-	 * @param value   值
-	 * @param pattern 格式字符串
-	 * @return 自身实例
+	 * @param value  值
+	 * @param format 格式字符串
+	 * @return this
 	 */
-	public Sheets value(Calendar value, String pattern) {
-		dateFormat(pattern);
+	public Sheets value(Calendar value, String format) {
+		if (globalDateFormat != null && format == null)
+			format = globalDateFormat;
+		dateFormat(format);
 		curCell.setCellValue(value);
 		return this;
 	}
@@ -309,7 +343,7 @@ public class Sheets {
 	 * 设置当前单元格的值
 	 *
 	 * @param value 值
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets value(boolean value) {
 		curCell.setCellValue(value);
@@ -320,7 +354,7 @@ public class Sheets {
 	 * 顺序设置单元格的值
 	 *
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets values(String... values) {
 		return values(null, values);
@@ -330,7 +364,7 @@ public class Sheets {
 	 * 顺序设置单元格的值
 	 *
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets values(RichTextString... values) {
 		return values(null, values);
@@ -340,7 +374,7 @@ public class Sheets {
 	 * 顺序设置单元格的值
 	 *
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets values(double... values) {
 		return values(null, values);
@@ -350,7 +384,7 @@ public class Sheets {
 	 * 顺序设置单元格的值
 	 *
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets values(Date... values) {
 		return values(null, values);
@@ -360,7 +394,7 @@ public class Sheets {
 	 * 顺序设置单元格的值
 	 *
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets values(Calendar... values) {
 		return values(null, values);
@@ -370,9 +404,69 @@ public class Sheets {
 	 * 顺序设置单元格的值
 	 *
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
 	public Sheets values(boolean... values) {
+		return values(null, values);
+	}
+
+	/**
+	 * 顺序设置单元格的值
+	 *
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(String[][] values) {
+		return values(null, values);
+	}
+
+	/**
+	 * 顺序设置单元格的值
+	 *
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(RichTextString[][] values) {
+		return values(null, values);
+	}
+
+	/**
+	 * 顺序设置单元格的值
+	 *
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(double[][] values) {
+		return values(null, values);
+	}
+
+	/**
+	 * 顺序设置单元格的值
+	 *
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(Date[][] values) {
+		return values(null, values);
+	}
+
+	/**
+	 * 顺序设置单元格的值
+	 *
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(Calendar[][] values) {
+		return values(null, values);
+	}
+
+	/**
+	 * 顺序设置单元格的值
+	 *
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(boolean[][] values) {
 		return values(null, values);
 	}
 
@@ -381,14 +475,14 @@ public class Sheets {
 	 *
 	 * @param style  单元格的样式
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets values(@Nullable HSSFCellStyle style, String... values) {
+	public Sheets values(@Nullable CellStyleBuilder style, String... values) {
 		for (String value : values) {
 			if (style != null)
-				this.style(style);
-			this.value(value);
-			this.nextCell();
+				style(style);
+			value(value);
+			nextCell();
 		}
 		return this;
 	}
@@ -398,14 +492,14 @@ public class Sheets {
 	 *
 	 * @param style  单元格的样式
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets values(@Nullable HSSFCellStyle style, RichTextString... values) {
+	public Sheets values(@Nullable CellStyleBuilder style, RichTextString... values) {
 		for (RichTextString value : values) {
 			if (style != null)
-				this.style(style);
-			this.value(value);
-			this.nextCell();
+				style(style);
+			value(value);
+			nextCell();
 		}
 		return this;
 	}
@@ -415,14 +509,14 @@ public class Sheets {
 	 *
 	 * @param style  单元格的样式
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets values(@Nullable HSSFCellStyle style, double... values) {
+	public Sheets values(@Nullable CellStyleBuilder style, double... values) {
 		for (double value : values) {
 			if (style != null)
-				this.style(style);
-			this.value(value);
-			this.nextCell();
+				style(style);
+			value(value);
+			nextCell();
 		}
 		return this;
 	}
@@ -432,14 +526,14 @@ public class Sheets {
 	 *
 	 * @param style  单元格的样式
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets values(@Nullable HSSFCellStyle style, Date... values) {
+	public Sheets values(@Nullable CellStyleBuilder style, Date... values) {
 		for (Date value : values) {
 			if (style != null)
-				this.style(style);
-			this.value(value);
-			this.nextCell();
+				style(style);
+			value(value);
+			nextCell();
 		}
 		return this;
 	}
@@ -449,14 +543,14 @@ public class Sheets {
 	 *
 	 * @param style  单元格的样式
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets values(@Nullable HSSFCellStyle style, Calendar... values) {
+	public Sheets values(@Nullable CellStyleBuilder style, Calendar... values) {
 		for (Calendar value : values) {
 			if (style != null)
-				this.style(style);
-			this.value(value);
-			this.nextCell();
+				style(style);
+			value(value);
+			nextCell();
 		}
 		return this;
 	}
@@ -466,14 +560,104 @@ public class Sheets {
 	 *
 	 * @param style  单元格的样式
 	 * @param values 值的数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets values(@Nullable HSSFCellStyle style, boolean... values) {
+	public Sheets values(@Nullable CellStyleBuilder style, boolean... values) {
 		for (boolean value : values) {
 			if (style != null)
-				this.style(style);
-			this.value(value);
-			this.nextCell();
+				style(style);
+			value(value);
+			nextCell();
+		}
+		return this;
+	}
+
+	/**
+	 * 顺序设置单元格的值和样式
+	 *
+	 * @param style  单元格的样式
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(@Nullable CellStyleBuilder style, String[][] values) {
+		for (String[] a : values) {
+			values(style, a);
+			nextRow();
+		}
+		return this;
+	}
+
+	/**
+	 * 顺序设置单元格的值和样式
+	 *
+	 * @param style  单元格的样式
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(@Nullable CellStyleBuilder style, RichTextString[][] values) {
+		for (RichTextString[] a : values) {
+			values(style, a);
+			nextRow();
+		}
+		return this;
+	}
+
+	/**
+	 * 顺序设置单元格的值和样式
+	 *
+	 * @param style  单元格的样式
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(@Nullable CellStyleBuilder style, double[][] values) {
+		for (double[] a : values) {
+			values(style, a);
+			nextRow();
+		}
+		return this;
+	}
+
+	/**
+	 * 顺序设置单元格的值和样式
+	 *
+	 * @param style  单元格的样式
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(@Nullable CellStyleBuilder style, Date[][] values) {
+		for (Date[] a : values) {
+			values(style, a);
+			nextRow();
+		}
+		return this;
+	}
+
+	/**
+	 * 顺序设置单元格的值和样式
+	 *
+	 * @param style  单元格的样式
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(@Nullable CellStyleBuilder style, Calendar[][] values) {
+		for (Calendar[] a : values) {
+			values(style, a);
+			nextRow();
+		}
+		return this;
+	}
+
+	/**
+	 * 顺序设置单元格的值和样式
+	 *
+	 * @param style  单元格的样式
+	 * @param values 值的数组
+	 * @return this
+	 */
+	public Sheets values(@Nullable CellStyleBuilder style, boolean[][] values) {
+		for (boolean[] a : values) {
+			values(style, a);
+			nextRow();
 		}
 		return this;
 	}
@@ -482,10 +666,10 @@ public class Sheets {
 	 * 按照Bean的字段的顺序设置单元格的值
 	 *
 	 * @param values bean数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets beanValues(List<?> values) throws IllegalAccessException {
-		return beanValues(null, values);
+	public Sheets values(List<?> values) throws IllegalAccessException {
+		return values(null, values);
 	}
 
 	/**
@@ -493,46 +677,46 @@ public class Sheets {
 	 *
 	 * @param style  样式
 	 * @param values bean数组
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets beanValues(@Nullable HSSFCellStyle style, List<?> values) {
-		return beanValues(style, values, null);
+	public Sheets values(@Nullable CellStyleBuilder style, List<?> values) {
+		return values(style, values, null);
 	}
 
 	/**
 	 * 按照Bean的字段的顺序设置单元格的值和样式
 	 *
-	 * @param style       样式
-	 * @param values      bean数组
-	 * @param datePattern 日期格式
-	 * @return 自身实例
+	 * @param style      样式
+	 * @param values     bean数组
+	 * @param dateFormat 日期格式
+	 * @return this
 	 */
-	public Sheets beanValues(@Nullable HSSFCellStyle style, List<?> values, @Nullable String datePattern) {
+	public Sheets values(@Nullable CellStyleBuilder style, List<?> values, @Nullable String dateFormat) {
 		if (values == null || values.isEmpty()) return this;
 		Field[] fields = values.get(0).getClass().getDeclaredFields();
 		for (Object o : values) {
 			for (Field field : fields) {
 				field.setAccessible(true);
 				if (style != null)
-					this.style(style);
+					style(style);
 				if (field.getType() == String.class) {
 					String value = BeanUtils.getProperty(o, field.getName());
-					this.value(value);
+					value(value);
 				} else if (field.getType() == RichTextString.class) {
 					RichTextString value = BeanUtils.getProperty(o, field.getName());
-					this.value(value);
+					value(value);
 				} else if (field.getType() == double.class) {
 					double value = BeanUtils.getProperty(o, field.getName());
-					this.value(value);
+					value(value);
 				} else if (field.getType() == Date.class) {
 					Date value = BeanUtils.getProperty(o, field.getName());
-					this.value(value, datePattern);
+					value(value, dateFormat);
 				} else if (field.getType() == Calendar.class) {
 					Calendar value = BeanUtils.getProperty(o, field.getName());
-					this.value(value, datePattern);
+					value(value, dateFormat);
 				} else if (field.getType() == boolean.class) {
 					boolean value = BeanUtils.getProperty(o, field.getName());
-					this.value(value);
+					value(value);
 				} else {
 					throw new RuntimeException("不支持的字段类型：" + field.getType().getName());
 				}
@@ -546,18 +730,18 @@ public class Sheets {
 	/**
 	 * 设置日期格式
 	 *
-	 * @param pattern 格式字符串
-	 * @return 自身实例
+	 * @param format 格式字符串
+	 * @return this
 	 */
-	public Sheets dateFormat(String pattern) {
-		if (pattern != null && !pattern.isEmpty()) {
+	public Sheets dateFormat(String format) {
+		if (format != null && !format.isEmpty()) {
 			if (curCell != null) {
 				HSSFCellStyle style = curCell.getCellStyle();
 				HSSFCellStyle newStyle = sheet.getWorkbook().createCellStyle();
 				if (style != null)
 					newStyle.cloneStyleFrom(style);
-				newStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat(pattern));
-				this.style(newStyle);
+				newStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat(format));
+				style(newStyle);
 			}
 		}
 		return this;
@@ -566,10 +750,10 @@ public class Sheets {
 	/**
 	 * 自动调整列宽（支持中文）
 	 *
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets autoSizeColumn() {
-		autoSizeColumn(0, maxColNum);
+	public Sheets autoColumnSize() {
+		autoColumnSize(0, maxColNum);
 		return this;
 	}
 
@@ -579,9 +763,9 @@ public class Sheets {
 	 *
 	 * @param firstColumn 起始列
 	 * @param lastColumn  结束列（包含）
-	 * @return 自身实例
+	 * @return this
 	 */
-	public Sheets autoSizeColumn(int firstColumn, int lastColumn) {
+	public Sheets autoColumnSize(int firstColumn, int lastColumn) {
 		for (int columnNum = firstColumn; columnNum <= lastColumn; columnNum++) {
 			int columnWidth = sheet.getColumnWidth(columnNum) / 256;
 			for (int rowNum = 0; rowNum <= sheet.getLastRowNum(); rowNum++) {
