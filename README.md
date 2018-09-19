@@ -60,6 +60,8 @@ Excels.helper().globalDateFormat("yyyy-MM-dd")
 	.body(centerStyle, getData())
 	.write(new File("example/example4.xls"));
 ```
+通过ExcelHelper创建的表格默认会开启自适应列宽，
+也可以通过autoColumnSize(false)来关闭它。
 
 ### 方式二：通过游标设置数据
 ```
