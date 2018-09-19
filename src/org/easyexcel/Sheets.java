@@ -29,7 +29,7 @@ public class Sheets {
 	private int curRowIndex = -1;
 	/** 当前列号 */
 	private int curColIndex = -1;
-	/** 最大行号 */
+	/** 最大列号 */
 	private int maxColNum = 0;
 	/** 全局日期格式 */
 	private String globalDateFormat;
@@ -137,6 +137,7 @@ public class Sheets {
 	/**
 	 * 获取指定行
 	 *
+	 * @param rowIndex 行号
 	 * @return 行
 	 */
 	public HSSFRow getRow(int rowIndex) {
@@ -184,6 +185,8 @@ public class Sheets {
 
 	/**
 	 * 跳过合并单元格
+	 * <p>如果当前位置在合并单元格的内部，并且不在合并单元格的左上角，
+	 * 则跳到合并单元格下一个单元格
 	 */
 	private void skipMergedRegion() {
 		for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
@@ -668,7 +671,7 @@ public class Sheets {
 	 * @param values bean数组
 	 * @return this
 	 */
-	public Sheets values(List<?> values) throws IllegalAccessException {
+	public Sheets values(List<?> values) {
 		return values(null, values);
 	}
 
@@ -781,9 +784,11 @@ public class Sheets {
 					HSSFCell currentCell = currentRow.getCell(columnNum);
 					int length = -1;
 					switch (currentCell.getCellTypeEnum()) {
+						// 字符串
 						case STRING:
 							length = currentCell.getStringCellValue().getBytes().length;
 							break;
+						// 日期
 						case NUMERIC:
 							if (DateUtil.isValidExcelDate(currentCell.getNumericCellValue())) {
 								Date value = currentCell.getDateCellValue();

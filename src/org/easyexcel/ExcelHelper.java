@@ -27,6 +27,9 @@ public class ExcelHelper {
 		sheet = workbook.createSheet();
 	}
 
+	/**
+	 * @param sheetname Sheet名称
+	 */
 	ExcelHelper(String sheetname) {
 		workbook = Excels.createWorkbook();
 		sheet = workbook.createSheet(sheetname);
@@ -74,6 +77,7 @@ public class ExcelHelper {
 	/**
 	 * 设置标题
 	 *
+	 * @param style 样式
 	 * @param title 标题
 	 * @return this
 	 */
@@ -108,6 +112,7 @@ public class ExcelHelper {
 	/**
 	 * 设置表头
 	 *
+	 * @param style 样式
 	 * @param headers 表头数组
 	 * @return this
 	 */
@@ -129,6 +134,7 @@ public class ExcelHelper {
 	/**
 	 * 设置表身
 	 *
+	 * @param style 样式
 	 * @param body 表身
 	 * @return this
 	 */
@@ -140,6 +146,7 @@ public class ExcelHelper {
 	/**
 	 * 设置表身
 	 *
+	 * @param style 样式
 	 * @param body 表身
 	 * @return this
 	 */
@@ -152,6 +159,7 @@ public class ExcelHelper {
 	 * 输出到文件
 	 *
 	 * @param file 输出的文件
+	 * @throws IOException IO错误
 	 */
 	public void write(File file) throws IOException {
 		beforeWrite();
@@ -162,6 +170,7 @@ public class ExcelHelper {
 	 * 输出到输出流
 	 *
 	 * @param out 输出流
+	 * @throws IOException IO错误
 	 */
 	public void write(OutputStream out) throws IOException {
 		beforeWrite();

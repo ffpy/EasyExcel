@@ -37,6 +37,7 @@ public class CellStyleBuilder implements Cloneable {
 	/**
 	 * 复制一个CellStyle实例
 	 *
+	 * @param source 源样式
 	 * @return 复制的CellStyle实例
 	 */
 	public static CellStyleBuilder of(CellStyleBuilder source) {
@@ -112,6 +113,7 @@ public class CellStyleBuilder implements Cloneable {
 	/**
 	 * 基于自身设置创建一个样式实例
 	 *
+	 * @param workbook 工作簿
 	 * @return 样式实例
 	 */
 	public HSSFCellStyle build(HSSFWorkbook workbook) {
