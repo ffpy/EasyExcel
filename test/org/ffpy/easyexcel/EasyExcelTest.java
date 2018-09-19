@@ -1,4 +1,4 @@
-package org.easyexcel;
+package org.ffpy.easyexcel;
 
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;

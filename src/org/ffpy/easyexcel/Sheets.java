@@ -1,4 +1,4 @@
-package org.easyexcel;
+package org.ffpy.easyexcel;
 
 import com.sun.istack.internal.Nullable;
 import org.apache.poi.hssf.usermodel.HSSFCell;
