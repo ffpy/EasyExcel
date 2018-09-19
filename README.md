@@ -85,3 +85,6 @@ workbook.write(new File("example/example1.xls"));
 
 ### 生成的表格
 ![example](https://raw.githubusercontent.com/ffpy/EasyExcel/master/image/example.png)
+
+## License
+EasyExcel is licensed under the Apache License, Version 2.0 
