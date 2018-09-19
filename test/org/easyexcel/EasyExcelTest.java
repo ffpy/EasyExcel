@@ -47,7 +47,7 @@ public class EasyExcelTest {
 	@Test
 	public void example2() throws IOException {
 		Workbooks workbook = Excels.createWorkbook();
-		workbook.createSheet()
+		Excels.createWorkbook().createSheet()
 			.mergedRegion(0, 0, 1, 2)
 			.mergedRegion(1, 2, 1, 2)
 			.value("a")

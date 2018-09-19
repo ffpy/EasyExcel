@@ -19,7 +19,7 @@ public class ExcelHelper {
 	private String title;
 	/** 标题样式 */
 	private CellStyleBuilder titleStyle;
-	/** 自适应列宽 */
+	/** 自适应列宽，默认开启 */
 	private boolean autoColumnSize = true;
 
 	ExcelHelper() {
