@@ -35,7 +35,7 @@ public class Workbooks {
 	 * @return 工作簿辅助类
 	 */
 	public Sheets createSheet() {
-		return new Sheets(workbook.createSheet());
+		return new Sheets(this, workbook.createSheet());
 	}
 
 	/**
@@ -45,7 +45,7 @@ public class Workbooks {
 	 * @return 工作簿辅助类
 	 */
 	public Sheets createSheet(String sheetname) {
-		return new Sheets(workbook.createSheet(sheetname));
+		return new Sheets(this, workbook.createSheet(sheetname));
 	}
 
 	/**

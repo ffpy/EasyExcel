@@ -24,29 +24,33 @@ public class EasyExcelTest {
 
 	@Test
 	public void example1() throws IOException {
-		// 创建工作簿
-		Workbooks workbook = Excels.createWorkbook();
 		// 创建居中样式（表身）
 		CellStyleBuilder centerStyle = CellStyleBuilder.of().alignment(HorizontalAlignment.CENTER)
 			.verticalAlignment(VerticalAlignment.CENTER);
 		// 创建居中加粗样式（表头）
 		CellStyleBuilder centerBoldStyle = CellStyleBuilder.of(centerStyle).bold(true);
-		workbook.createSheet()
+		Excels.createWorkbook().createSheet()
+			// 合并单元格
 			.mergedRegion(0, 0, 0, 4)
+			// 设置标题
 			.style(centerBoldStyle)
 			.value("成绩表")
+			// 设置表头
 			.nextRow()
 			.values(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
+			// 设置表身
 			.nextRow()
 			.values(centerStyle, getData(), "yyyy-MM-dd")
-			.autoColumnSize();
-		// 写入到文件
-		workbook.write(new File("example/example1.xls"));
+			// 自适应列宽
+			.autoColumnSize()
+			// 返回工作簿
+			.end()
+			// 写入到文件
+			.write(new File("example/example1.xls"));
 	}
 
 	@Test
 	public void example2() throws IOException {
-		Workbooks workbook = Excels.createWorkbook();
 		Excels.createWorkbook().createSheet()
 			.mergedRegion(0, 0, 1, 2)
 			.mergedRegion(1, 2, 1, 2)
@@ -61,8 +65,9 @@ public class EasyExcelTest {
 			.nextCell().value("cc")
 			.nextRow().value(new Date(), "yyyy-MM-dd")
 			.nextCell().value(Calendar.getInstance(), "yyyy-MM-dd HH:mm:ss")
-			.autoColumnSize();
-		workbook.write(new File("example/example2.xls"));
+			.autoColumnSize()
+			.end()
+			.write(new File("example/example2.xls"));
 	}
 
 	@Test
@@ -96,9 +101,13 @@ public class EasyExcelTest {
 		CellStyleBuilder centerBoldStyle = CellStyleBuilder.of(centerStyle).bold(true);
 		// 创建表格
 		Excels.helper().globalDateFormat("yyyy-MM-dd")
+			// 标题
 			.title(centerBoldStyle, "成绩表")
+			// 表头
 			.header(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
+			// 表身
 			.body(centerStyle, getData())
+			// 写入文件
 			.write(new File("example/example4.xls"));
 	}
 

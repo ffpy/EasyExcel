@@ -9,7 +9,6 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.util.CellRangeAddress;
 
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -19,6 +18,8 @@ import java.util.List;
  * Excel Sheet的辅助类
  */
 public class Sheets {
+	/** 工作簿 */
+	private Workbooks workbooks;
 	/** Sheet实例 */
 	private HSSFSheet sheet;
 	/** 当前行 */
@@ -35,29 +36,28 @@ public class Sheets {
 	private String globalDateFormat;
 
 	/**
-	 * @param sheet 工作簿实例
+	 * @param workbooks 工作簿
+	 * @param sheet     Sheet
 	 */
-	Sheets(HSSFSheet sheet) {
+	Sheets(Workbooks workbooks, HSSFSheet sheet) {
+		this.workbooks = workbooks;
 		this.sheet = sheet;
 		nextRow();
 	}
 
 	/**
-	 * 设置当前列号，并记录最大列号
+	 * 获取工作簿
 	 *
-	 * @param col 列号
+	 * @return 工作簿
 	 */
-	private void setCurColIndex(int col) {
-		this.curColIndex = col;
-		if (col > maxColNum) {
-			maxColNum = col;
-		}
+	public Workbooks getWorkbooks() {
+		return workbooks;
 	}
 
 	/**
-	 * 获取工作簿实例
+	 * 获取Sheet
 	 *
-	 * @return 工作簿实例
+	 * @return Sheet
 	 */
 	public HSSFSheet getSheet() {
 		return sheet;
@@ -696,32 +696,32 @@ public class Sheets {
 	 */
 	public Sheets values(@Nullable CellStyleBuilder style, List<?> values, @Nullable String dateFormat) {
 		if (values == null || values.isEmpty()) return this;
-		Field[] fields = values.get(0).getClass().getDeclaredFields();
+		Class<?> beanClass = values.get(0).getClass();
+		List<PropertyHelper> propertyHelpers = BeanHelper.of(beanClass).getOrderedProperties();
 		for (Object o : values) {
-			for (Field field : fields) {
-				field.setAccessible(true);
+			for (PropertyHelper propertyHelper : propertyHelpers) {
 				if (style != null)
 					style(style);
-				if (field.getType() == String.class) {
-					String value = BeanUtils.getProperty(o, field.getName());
+				if (propertyHelper.getPropertyType() == String.class) {
+					String value = propertyHelper.getProperty(o);
 					value(value);
-				} else if (field.getType() == RichTextString.class) {
-					RichTextString value = BeanUtils.getProperty(o, field.getName());
+				} else if (propertyHelper.getPropertyType() == RichTextString.class) {
+					RichTextString value = propertyHelper.getProperty(o);
 					value(value);
-				} else if (field.getType() == double.class) {
-					double value = BeanUtils.getProperty(o, field.getName());
+				} else if (propertyHelper.getPropertyType() == double.class) {
+					double value = propertyHelper.getProperty(o);
 					value(value);
-				} else if (field.getType() == Date.class) {
-					Date value = BeanUtils.getProperty(o, field.getName());
+				} else if (propertyHelper.getPropertyType() == Date.class) {
+					Date value = propertyHelper.getProperty(o);
 					value(value, dateFormat);
-				} else if (field.getType() == Calendar.class) {
-					Calendar value = BeanUtils.getProperty(o, field.getName());
+				} else if (propertyHelper.getPropertyType() == Calendar.class) {
+					Calendar value = propertyHelper.getProperty(o);
 					value(value, dateFormat);
-				} else if (field.getType() == boolean.class) {
-					boolean value = BeanUtils.getProperty(o, field.getName());
+				} else if (propertyHelper.getPropertyType() == boolean.class) {
+					boolean value = propertyHelper.getProperty(o);
 					value(value);
 				} else {
-					throw new RuntimeException("不支持的字段类型：" + field.getType().getName());
+					throw new RuntimeException("不支持的字段类型：" + propertyHelper.getPropertyType().getName());
 				}
 				nextCell();
 			}
@@ -810,5 +810,26 @@ public class Sheets {
 			sheet.setColumnWidth(columnNum, columnWidth * 256);
 		}
 		return this;
+	}
+
+	/**
+	 * 返回到工作簿
+	 *
+	 * @return 工作簿
+	 */
+	public Workbooks end() {
+		return workbooks;
+	}
+
+	/**
+	 * 设置当前列号，并记录最大列号
+	 *
+	 * @param col 列号
+	 */
+	private void setCurColIndex(int col) {
+		this.curColIndex = col;
+		if (col > maxColNum) {
+			maxColNum = col;
+		}
 	}
 }

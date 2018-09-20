@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 /**
- * Excel表格辅助者
+ * Excel表格辅助类
  */
 public class ExcelHelper {
 	/** 工作簿 */
