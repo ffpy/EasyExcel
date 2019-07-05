@@ -1,7 +1,6 @@
 ## 基于Apache POI封装的Excel操作API
 ## 下载
-- [easyexcel-binary-0.1.jar](https://raw.githubusercontent.com/ffpy/EasyExcel/master/downloads/easyexcel-binary-0.1.jar)
-- [easyexcel-source-0.1.jar](https://raw.githubusercontent.com/ffpy/EasyExcel/master/downloads/easyexcel-source-0.1.jar)
+- [easyexcel-0.2.jar](https://raw.githubusercontent.com/ffpy/EasyExcel/master/downloads/easyexcel-0.2.jar)
 - [poi-3.17.jar](https://raw.githubusercontent.com/ffpy/EasyExcel/master/downloads/poi-3.17.jar)
 
 ## 快速开始
