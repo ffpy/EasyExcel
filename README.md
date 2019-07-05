@@ -49,20 +49,24 @@ private List<Item> getData() {
 ### 方式一：通过ExcelHelper快速创建表格
 ```
 // 创建居中样式（表身）
-CellStyleBuilder centerStyle = CellStyleBuilder.of().alignment(HorizontalAlignment.CENTER)
-	.verticalAlignment(VerticalAlignment.CENTER);
+CellStyleBuilder centerStyle = CellStyleBuilder.of()
+        .alignment(HorizontalAlignment.CENTER)
+        .verticalAlignment(VerticalAlignment.CENTER)
+        .dateFormat("yyyy-MM-dd");
+
 // 创建居中加粗样式（表头）
 CellStyleBuilder centerBoldStyle = CellStyleBuilder.of(centerStyle).bold(true);
+
 // 创建表格
-Excels.helper().globalDateFormat("yyyy-MM-dd")
-	// 标题
-	.title(centerBoldStyle, "成绩表")
-	// 表头
-	.header(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
-	// 表身
-	.body(centerStyle, getData())
-	// 写入文件
-	.write(new File("example/example4.xls"));
+Excels.helper()
+        // 标题
+        .title(centerBoldStyle, "成绩表")
+        // 表头
+        .header(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
+        // 表身
+        .body(centerStyle, getData())
+        // 写入文件
+        .write(new File("example/example4.xls"));
 ```
 通过ExcelHelper创建的表格默认会开启自适应列宽，
 也可以通过autoColumnSize(false)来关闭它。
@@ -70,28 +74,32 @@ Excels.helper().globalDateFormat("yyyy-MM-dd")
 ### 方式二：通过游标设置数据
 ```
 // 创建居中样式（表身）
-CellStyleBuilder centerStyle = CellStyleBuilder.of().alignment(HorizontalAlignment.CENTER)
-	.verticalAlignment(VerticalAlignment.CENTER);
+CellStyleBuilder centerStyle = CellStyleBuilder.of()
+        .alignment(HorizontalAlignment.CENTER)
+        .verticalAlignment(VerticalAlignment.CENTER)
+        .dateFormat("yyyy-MM-dd");
+
 // 创建居中加粗样式（表头）
 CellStyleBuilder centerBoldStyle = CellStyleBuilder.of(centerStyle).bold(true);
+
 Excels.createWorkbook().createSheet()
-	// 合并单元格
-	.mergedRegion(0, 0, 0, 4)
-	// 设置标题
-	.style(centerBoldStyle)
-	.value("成绩表")
-	// 设置表头
-	.nextRow()
-	.values(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
-	// 设置表身
-	.nextRow()
-	.values(centerStyle, getData(), "yyyy-MM-dd")
-	// 自适应列宽
-	.autoColumnSize()
-	// 返回工作簿
-	.end()
-	// 写入到文件
-	.write(new File("example/example1.xls"));
+        // 合并单元格
+        .mergedRegion(0, 0, 0, 4)
+        // 设置标题
+        .style(centerBoldStyle)
+        .value("成绩表")
+        // 设置表头
+        .nextRow()
+        .values(centerBoldStyle, "学号", "姓名", "课程", "成绩", "日期")
+        // 设置表身
+        .nextRow()
+        .values(centerStyle, getData())
+        // 自适应列宽
+        .autoColumnSize()
+        // 返回工作簿
+        .end()
+        // 写入到文件
+        .write(new File("example/example1.xls"));
 ```
 
 ### 生成的表格

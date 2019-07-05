@@ -89,17 +89,6 @@ public class ExcelHelper {
 	}
 
 	/**
-	 * 设置全局日期格式
-	 *
-	 * @param format 日期格式
-	 * @return this
-	 */
-	public ExcelHelper globalDateFormat(String format) {
-		sheet.globalDateFormat(format);
-		return this;
-	}
-
-	/**
 	 * 设置表头
 	 *
 	 * @param headers 表头数组
